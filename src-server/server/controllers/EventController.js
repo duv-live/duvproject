@@ -12,7 +12,13 @@ import {
 } from '../models';
 import sendMail from '../MailSender';
 import EMAIL_CONTENT from '../email-template/content';
-import { EVENT_HIRETYPE, NOTIFICATIONS, NOTIFICATION_TYPE } from '../constant';
+import {
+  APPLICATION_TYPE,
+  EVENTDATE_FILTER,
+  EVENT_HIRETYPE,
+  NOTIFICATIONS,
+  NOTIFICATION_TYPE,
+} from '../constant';
 
 const reviewsInclude = [
   {
@@ -298,7 +304,7 @@ const EventController = {
     const userId = req.user.id;
     Application.findAll({
       where: {
-        applicationType: 'Request',
+        applicationType: APPLICATION_TYPE.REQUEST,
       },
       include: [
         {
@@ -848,7 +854,14 @@ const EventController = {
   },
 
   async getAllEvents(req, res) {
-    const { highestBudget, language, limit, lowestBudget, offset } = req.query;
+    const {
+      eventTime,
+      highestBudget,
+      language,
+      limit,
+      lowestBudget,
+      offset,
+    } = req.query;
 
     try {
       let eventEntertainerQuery = {};
@@ -874,13 +887,10 @@ const EventController = {
 
       if (language) {
         const languages = JSON.parse(language);
+        let languageQuery = languages.map((lang) => ({
+          [Op.substring]: lang,
+        }));
 
-        let languageQuery = [];
-        for (const lang of languages) {
-          languageQuery.push({
-            [Op.substring]: lang,
-          });
-        }
         eventEntertainerQuery.language = {
           [Op.and]: languageQuery,
         };
@@ -899,6 +909,12 @@ const EventController = {
           eventQuery[key] = { [Op.eq]: req.query[key] };
         }
       });
+      if (eventTime && eventTime === EVENTDATE_FILTER.PAST) {
+        eventQuery.eventDate = { [Op.lte]: Sequelize.literal('NOW()') };
+      }
+      if (eventTime && eventTime === EVENTDATE_FILTER.FUTURE) {
+        eventQuery.eventDate = { [Op.gte]: Sequelize.literal('NOW()') };
+      }
 
       const applicationKeys = ['applicationType', 'paid', 'status'];
       let applicationQuery = {};
@@ -940,7 +956,7 @@ const EventController = {
             {
               model: Application,
               as: 'applications',
-              where: applicationQuery,
+              // where: applicationQuery,
             },
           ],
         },

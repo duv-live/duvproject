@@ -12,10 +12,11 @@ import {
 import sendMail from '../MailSender';
 import { validString, moneyFormat, getLongDate, getTime } from '../utils';
 import {
-  USER_TYPES,
+  APPLICATION_TYPE,
   NOTIFICATIONS,
   NOTIFICATION_TYPE,
   REQUEST_ACTION,
+  USER_TYPES,
 } from '../constant';
 import EMAIL_CONTENT from '../email-template/content';
 import { addDays } from 'date-fns';
@@ -196,7 +197,7 @@ const ApplicationController = {
               location: application.user.profile.location,
               slug: application.user.profile.slug,
             };
-            if (applicationDetails.type === 'Bid') {
+            if (applicationDetails.type === APPLICATION_TYPE.BID) {
               result.bids.push({ ...eventDetails, ...applicationDetails });
             } else {
               result.requests.push({ ...eventDetails, ...applicationDetails });
@@ -277,7 +278,7 @@ const ApplicationController = {
               },
               {
                 [Op.and]: Sequelize.literal(
-                  `"applications"."applicationType" = 'Bid'`
+                  `"applications"."applicationType" = ${APPLICATION_TYPE.BID}`
                 ),
               },
             ],
@@ -352,7 +353,8 @@ const ApplicationController = {
           if (
             eventEntertainer.applications &&
             eventEntertainer.applications.length > 0 &&
-            eventEntertainer.applications[0].applicationType === 'Bid'
+            eventEntertainer.applications[0].applicationType ===
+              APPLICATION_TYPE.BID
           ) {
             result.bids.push(eventEntertainer);
           } else if (eventEntertainer.hireType === 'Auction') {
@@ -490,7 +492,7 @@ const ApplicationController = {
     return req.user
       .getApplications({
         where: {
-          applicationType: 'Bid',
+          applicationType: APPLICATION_TYPE.BID,
         },
         include: [
           {
@@ -529,7 +531,7 @@ const ApplicationController = {
     return req.user
       .getApplications({
         where: {
-          applicationType: 'Request',
+          applicationType: APPLICATION_TYPE.REQUEST,
         },
         include: [
           {
@@ -878,7 +880,7 @@ const ApplicationController = {
       ],
     })
       .then((application) => {
-        const isARequest = application.applicationType !== 'Bid';
+        const isARequest = application.applicationType !== APPLICATION_TYPE.BID;
 
         const commission = application.commission || DEFAULT_COMMISSION;
         const { entertainerFee } = priceCalculatorHelper(

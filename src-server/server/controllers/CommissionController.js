@@ -1,5 +1,5 @@
 import { Commission } from '../models';
-import { validString } from '../utils';
+import { validString, getAll } from '../utils';
 
 export const DEFAULT_COMMISSION = {
   id: null,
@@ -104,6 +104,62 @@ const CommissionController = {
         return res.json({
           commission: commission || DEFAULT_COMMISSION,
         });
+      })
+      .catch((error) => {
+        return res.status(500).json({ message: error.message });
+      });
+  },
+
+  /**
+   * get All Commissions
+   * @function
+   * @param {object} req is req object
+   * @param {object} res is res object
+   * @return {object} returns res object
+   */
+  async getAllCommissions(req, res) {
+    const { offset, limit } = req.query;
+    try {
+      const options = {
+        offset: offset || 0,
+        limit: limit || 10,
+      };
+      try {
+        const { result, pagination } = await getAll(Commission, options);
+        return res.status(200).json({ commission: result, pagination });
+      } catch (error) {
+        const status = error.status || 500;
+        const errorMessage = error.message || error;
+        return res.status(status).json({ message: errorMessage });
+      }
+    } catch (error) {
+      const status = error.status || 500;
+      const errorMessage = error.message || error;
+      return res.status(status).json({ message: errorMessage });
+    }
+  },
+
+  /**
+   * delete one commission
+   * @function
+   * @param {object} req is req object
+   * @param {object} res is res object
+   * @return {object} returns res object
+   */
+  deleteOneCommission(req, res) {
+    Commission.findById(req.params.id)
+      .then((commission) => {
+        if (!commission) {
+          return res.status(400).send({
+            message: 'Commission Not Found',
+          });
+        } else {
+          return commission.destroy().then(() =>
+            res.status(200).send({
+              message: `Commission ${req.params.id} Deleted`,
+            })
+          );
+        }
       })
       .catch((error) => {
         return res.status(500).json({ message: error.message });

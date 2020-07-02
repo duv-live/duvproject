@@ -286,11 +286,17 @@ const ReviewController = {
         //   },
         // ],
       };
-      const { result, pagination } = await getAll(Review, options);
-      return res.status(200).json({
-        result,
-        pagination,
-      });
+      try {
+        const { result, pagination } = await getAll(Review, options);
+        return res.status(200).json({
+          result,
+          pagination,
+        });
+      } catch (error) {
+        const status = error.status || 500;
+        const errorMessage = error.message || error;
+        return res.status(status).json({ message: errorMessage });
+      }
     } catch (error) {
       const status = error.status || 500;
       const errorMessage = error.message || error;

@@ -14,7 +14,11 @@ import { validString, getLongDate, getTime, moneyFormat } from '../utils';
 import EMAIL_CONTENT from '../email-template/content';
 import { DEFAULT_COMMISSION } from './CommissionController';
 import { priceCalculatorHelper } from '../utils/priceCalculator';
-import { NOTIFICATIONS, NOTIFICATION_TYPE } from '../constant';
+import {
+  APPLICATION_TYPE,
+  NOTIFICATIONS,
+  NOTIFICATION_TYPE,
+} from '../constant';
 import sendMail from '../MailSender';
 import { addDays } from 'date-fns';
 
@@ -217,7 +221,7 @@ const EventEntertainerController = {
               eventId,
               commission: commission.id,
               eventEntertainerId: eventEntertainer.id,
-              applicationType: 'Request',
+              applicationType: APPLICATION_TYPE.REQUEST,
               takeHome: entertainerFee,
               expiryDate: addDays(Date.now(), 1),
             });

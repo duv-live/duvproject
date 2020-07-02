@@ -1145,12 +1145,16 @@ const UserController = {
         limit: limit || 10,
         where: userQuery,
         include: userAssociatedModels,
-      };
+      };try {
       const { result, pagination } = await getAll(User, options);
       return res.status(200).json({
         users: result.map((user) => UserController.transformUser(user)),
         pagination,
-      });
+      }); } catch (error) {
+        const status = error.status || 500;
+        const errorMessage = error.message || error;
+        return res.status(status).json({ message: errorMessage });
+      }
     } catch (error) {
       const status = error.status || 500;
       const errorMessage = error.message || error;
